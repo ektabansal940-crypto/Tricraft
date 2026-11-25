@@ -130,7 +130,7 @@
         root.classList.add('is-hero-ready');
         window.setTimeout(() => {
           root.classList.add('is-hero-settled');
-        }, 1340);
+        }, 1460);
       });
     });
   }

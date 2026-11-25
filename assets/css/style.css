@@ -2780,10 +2780,6 @@ button:focus-visible,
     height: clamp(320px, 43vw, 460px);
   }
 
-  .motion-ready .hero-stage {
-    min-height: 175vh;
-  }
-
   .services-heading>p,
   .people-intro>p,
   .perspectives-heading>p,
@@ -2803,6 +2799,12 @@ button:focus-visible,
 
   .conversation-cinema {
     min-height: 430px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) and (min-height: 600px) {
+  .motion-ready .hero-stage {
+    min-height: 175vh;
   }
 }
 
@@ -3081,7 +3083,16 @@ button:focus-visible,
     font-size: 13px;
   }
 
-  /* Hero mobile — crisp stacked reveal without heavy blur or oversized movement */
+  /* Hero mobile — natural stacked flow with zero desktop sticky spacer */
+  .motion-ready .hero-stage {
+    min-height: 0;
+  }
+
+  .motion-ready .hero {
+    position: relative;
+    top: auto;
+  }
+
   .motion-ready .hero-kicker,
   .motion-ready .hero h1 .line-inner {
     filter: none;

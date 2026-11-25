@@ -8,12 +8,15 @@
   const isFinePointer = () => Boolean(finePointerQuery && finePointerQuery.matches);
   const isCompactViewport = () =>
     (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) || !isFinePointer();
+  const isDesktopFolderPinned = () =>
+    Boolean(window.matchMedia && window.matchMedia('(min-width: 960px) and (min-height: 700px)').matches) &&
+    isFinePointer();
 
   const header = document.querySelector('.site-header');
   const toggle = document.querySelector('.menu-toggle');
   const nav = document.querySelector('.primary-nav');
 
-  // Mobile navigation drawer: open/close, accessible focus, Escape & outside click
+  // 01 / Mobile navigation drawer: open/close, accessible focus, Escape & outside click
   if (toggle && nav) {
     const navLinks = Array.from(nav.querySelectorAll('a'));
     navLinks.forEach((link, idx) => {
@@ -50,11 +53,8 @@
 
     toggle.addEventListener('click', () => {
       const isOpen = toggle.getAttribute('aria-expanded') === 'true';
-      if (isOpen) {
-        closeMenu();
-      } else {
-        openMenu();
-      }
+      if (isOpen) closeMenu();
+      else openMenu();
     });
 
     navLinks.forEach(link => link.addEventListener('click', closeMenu));
@@ -89,7 +89,7 @@
   const year = document.getElementById('year');
   if (year) year.textContent = new Date().getFullYear();
 
-  // Header scroll state & active nav indicator
+  // Header scroll elevation & active section indicator
   const updateHeaderState = () => {
     if (!header) return;
     header.classList.toggle('is-scrolled', window.scrollY > 18);
@@ -122,7 +122,7 @@
     }
   }
 
-  // Hero entrance + sticky-stack settle
+  // 02 / Opening Hero masked entrance + sticky settle
   if (!isReducedMotion()) {
     root.classList.add('motion-ready');
     requestAnimationFrame(() => {
@@ -135,35 +135,37 @@
     });
   }
 
-  // Scroll-triggered reveals with coordinated stagger
+  // Coordinated scroll-triggered reveals across sections
   const staggerGroups = [
     { selector: '.section-label', step: 0, max: 0 },
     { selector: '.belief-main', step: 0, max: 0 },
     { selector: '.belief .section-aside', step: 0, max: 0, offset: 120 },
     { selector: '.services-heading > *', step: 85, max: 2 },
-    { selector: '.service-card', step: 75, max: 4 },
+    { selector: '.service-card', step: 85, max: 4 },
     { selector: '.capability-caveat', step: 0, max: 0 },
     { selector: '.perspectives-heading > *', step: 85, max: 2 },
-    { selector: '.article-row', step: 80, max: 3 },
+    { selector: '.article-row', step: 110, max: 3 },
     { selector: '.editorial-disclaimer', step: 0, max: 0 },
     { selector: '.practice-intro > *', step: 85, max: 2 },
-    { selector: '.work-card .work-meta', step: 85, max: 3, offset: 60 },
-    { selector: '.work-card .work-summary', step: 85, max: 3, offset: 120 },
     { selector: '.section-end-link', step: 0, max: 0 },
-    { selector: '.conversation-copy > *', step: 70, max: 4 },
+    { selector: '.conversation-copy > *', step: 75, max: 4 },
     { selector: '.people-intro > *', step: 85, max: 2 },
-    { selector: '.people-prompts > div', step: 85, max: 3 },
+    { selector: '.mosaic-card', step: 105, max: 3 },
     { selector: '.people-note', step: 0, max: 0 },
     { selector: '.closing h2', step: 0, max: 0 },
-    { selector: '.closing-pillars > div', step: 80, max: 3 },
-    { selector: '.contact-top, .contact h2, .contact-link, .contact-bottom, .contact-note', step: 65, max: 4 },
-    { selector: '.footer-main > *, .footer-bottom', step: 65, max: 4 }
+    { selector: '.closing-pillar', step: 95, max: 3 },
+    { selector: '.contact-top, .contact h2, .contact-subline, .contact-link, .contact-bottom, .contact-note', step: 70, max: 5 },
+    { selector: '.footer-main > *, .footer-wordmark-stage, .footer-bottom', step: 85, max: 4 }
   ];
 
   const revealTargets = [];
   staggerGroups.forEach(group => {
     document.querySelectorAll(group.selector).forEach((el, idx) => {
       el.classList.add('reveal');
+      if (group.selector === '.mosaic-card') {
+        if (idx === 0) el.classList.add('reveal-left');
+        if (idx === 2) el.classList.add('reveal-right');
+      }
       if (group.step > 0 || group.offset) {
         const capped = group.max ? Math.min(idx, group.max) : idx;
         const delay = (group.offset || 0) + capped * group.step;
@@ -173,13 +175,10 @@
     });
   });
 
-  const mediaTargets = Array.from(
-    new Set(document.querySelectorAll('.work-image, .conversation-art, .reveal-media'))
-  );
-  mediaTargets.forEach(el => el.classList.add('reveal-media'));
-  ['.service-media', '.article-thumb', '.work-image'].forEach(sel => {
+  const mediaTargets = Array.from(document.querySelectorAll('.reveal-media'));
+  ['.service-media', '.article-thumb'].forEach(sel => {
     document.querySelectorAll(sel).forEach((el, idx) => {
-      el.style.setProperty('--stagger-delay', `${Math.min(idx, 3) * 85}ms`);
+      el.style.setProperty('--stagger-delay', `${Math.min(idx, 3) * 95}ms`);
     });
   });
 
@@ -189,7 +188,7 @@
   const revealAllImmediately = () => {
     allTargets.forEach(el => el.classList.add('is-visible'));
     document.querySelectorAll('.process-step').forEach(s => s.classList.add('is-step-active'));
-    document.querySelectorAll('.closing-pillars > div').forEach(p => p.classList.add('is-pillar-active'));
+    document.querySelectorAll('.closing-pillar').forEach(p => p.classList.add('is-pillar-active'));
   };
 
   if (!isReducedMotion() && 'IntersectionObserver' in window) {
@@ -207,7 +206,7 @@
     revealAllImmediately();
   }
 
-  // Touch & keyboard interactive card groups (03 Services, 04 Perspectives, 05 Practice, 07 People)
+  // Interactive tap/keyboard toggle groups (03 Services, 04 Perspectives, 05 Practice cards, 07 People mosaic)
   const setupInteractiveGroup = (containerSelector, itemSelector, toggleContainerActiveClass = false) => {
     const container = document.querySelector(containerSelector);
     if (!container) return;
@@ -237,33 +236,51 @@
   setupInteractiveGroup('.service-grid', '.service-card', true);
   setupInteractiveGroup('.article-list', '.article-row');
   setupInteractiveGroup('.work-grid', '.work-card');
-  setupInteractiveGroup('.people-prompts', ':scope > div');
+  setupInteractiveGroup('.people-prompts', '.mosaic-card');
 
-  // Scroll-driven choreography (adapted for desktop vs tablet/mobile)
+  // 04 / Practice Room folder manual spread/tuck toggle
+  const folderShell = document.querySelector('.case-folder-shell');
+  const folderToggle = document.querySelector('.folder-toggle');
+  if (folderShell && folderToggle) {
+    const syncFolderLabel = opened => {
+      folderToggle.setAttribute('aria-expanded', String(opened));
+      const label = folderToggle.querySelector('span');
+      if (label) label.textContent = opened ? 'Tuck sheets' : 'Spread sheets';
+    };
+    folderToggle.addEventListener('click', () => {
+      const opened = folderShell.classList.toggle('is-folder-opened');
+      syncFolderLabel(opened);
+    });
+  }
+
+  // Scroll-driven choreography: Hero sticky, Practice Room case-file folder, Process timelines, Spotlight parallax, Mosaic, Contact CTA
   if (!isReducedMotion()) {
     const heroStage = document.querySelector('.hero-stage');
     const beliefEl = document.querySelector('.belief');
-    const practiceEl = document.querySelector('.practice');
+    const practiceStage = document.querySelector('.practice-stage');
     const practiceSeqEl = document.querySelector('.section-end-link');
     const processSteps = Array.from(document.querySelectorAll('.process-step'));
-    const convEl = document.querySelector('.conversation-art');
+    const convSection = document.querySelector('.conversation');
     const peopleEl = document.querySelector('.people-prompts');
     const closingEl = document.querySelector('.closing');
-    const closingPillars = Array.from(document.querySelectorAll('.closing-pillars > div'));
+    const closingPillars = Array.from(document.querySelectorAll('.closing-pillar'));
+    const contactSection = document.querySelector('.contact');
 
     const clamp01 = v => Math.max(0, Math.min(1, v));
     let scrollTicking = false;
     let lastScrollY = window.scrollY;
 
-    const resetDesktopScrollVars = () => {
+    const resetDesktopVars = () => {
       root.style.removeProperty('--hero-p');
       if (beliefEl) beliefEl.style.removeProperty('--belief-p');
-      if (practiceEl) {
-        const wg = practiceEl.querySelector('.work-grid');
-        if (wg) wg.style.removeProperty('--practice-p');
-      }
-      if (convEl) convEl.style.removeProperty('--conv-p');
+      if (convSection) convSection.style.removeProperty('--conv-p');
       if (peopleEl) peopleEl.style.removeProperty('--people-p');
+      if (contactSection) contactSection.style.removeProperty('--contact-p');
+      if (folderShell) {
+        folderShell.style.removeProperty('--folder-rise');
+        folderShell.style.removeProperty('--folder-tuck');
+        folderShell.style.removeProperty('--folder-exit');
+      }
     };
 
     const updateScrollProgress = () => {
@@ -275,7 +292,7 @@
 
       if (currentY > 4) root.classList.add('is-hero-settled');
 
-      // Ensure fast scrolls never leave any reveal or media target hidden
+      // Ensure fast programmatic or user scrolls never leave any reveal hidden
       allTargets.forEach(el => {
         if (el.classList.contains('is-visible')) return;
         const rect = el.getBoundingClientRect();
@@ -290,7 +307,7 @@
       const compact = isCompactViewport();
 
       if (compact) {
-        resetDesktopScrollVars();
+        resetDesktopVars();
       } else {
         if (heroStage) {
           const r = heroStage.getBoundingClientRect();
@@ -303,59 +320,64 @@
           beliefEl.style.setProperty('--belief-p', clamp01((vh - r.top) / (vh * 0.82)).toFixed(4));
         }
 
-        if (practiceEl) {
-          const workGrid = practiceEl.querySelector('.work-grid');
-          if (workGrid) {
-            const r = workGrid.getBoundingClientRect();
-            const p = clamp01((vh * 0.96 - r.top) / (vh * 0.62));
-            workGrid.style.setProperty('--practice-p', p.toFixed(4));
-          }
-        }
-
-        if (convEl) {
-          const r = convEl.getBoundingClientRect();
-          const enterP = clamp01((vh - r.top) / (vh * 0.72));
-          convEl.style.setProperty('--conv-p', enterP.toFixed(4));
+        if (convSection) {
+          const r = convSection.getBoundingClientRect();
+          convSection.style.setProperty('--conv-p', clamp01((vh - r.top) / (vh + r.height)).toFixed(4));
         }
 
         if (peopleEl) {
           const r = peopleEl.getBoundingClientRect();
           peopleEl.style.setProperty('--people-p', clamp01((vh - r.top) / (vh + r.height)).toFixed(4));
         }
+
+        if (contactSection) {
+          const r = contactSection.getBoundingClientRect();
+          contactSection.style.setProperty('--contact-p', clamp01((vh - r.top) / (vh + r.height)).toFixed(4));
+        }
       }
 
-      // Lightweight sequence & closing pillar activation across all viewports
+      // 04 / Layered Case File Folder scroll progress (desktop pinned stage)
+      if (practiceStage && folderShell) {
+        if (isDesktopFolderPinned()) {
+          const r = practiceStage.getBoundingClientRect();
+          const pinRange = Math.max(1, r.height - vh * 0.65);
+          // Rise cards into clean spread (0..0.24), hold readable spread (0.24..0.38), tuck into folder (0.38..0.82)
+          const rawP = clamp01((vh * 0.44 - r.top) / pinRange);
+          const rise = clamp01(rawP / 0.24);
+          const tuck = clamp01((rawP - 0.38) / 0.44);
+          const exit = clamp01((rawP - 0.84) / 0.16);
+          folderShell.style.setProperty('--folder-rise', rise.toFixed(4));
+          folderShell.style.setProperty('--folder-tuck', tuck.toFixed(4));
+          folderShell.style.setProperty('--folder-exit', exit.toFixed(4));
+        } else {
+          folderShell.style.removeProperty('--folder-rise');
+          folderShell.style.removeProperty('--folder-tuck');
+          folderShell.style.removeProperty('--folder-exit');
+        }
+      }
+
+      // 06 / Process-style scroll progression (Practice Room sequence + Closing Pillars)
       if (practiceSeqEl) {
         const r = practiceSeqEl.getBoundingClientRect();
-        const reached = r.top < vh * 0.92;
         const seqP = compact
-          ? (reached ? 1 : 0)
+          ? (r.top < vh * 0.92 ? 1 : 0)
           : clamp01((vh * 0.92 - r.top) / (vh * 0.45));
         practiceSeqEl.style.setProperty('--practice-seq-p', seqP.toFixed(4));
         processSteps.forEach((stepEl, idx) => {
           const threshold = idx / Math.max(1, processSteps.length);
-          if (seqP >= threshold * 0.85) {
-            stepEl.classList.add('is-step-active');
-          } else if (!compact) {
-            stepEl.classList.remove('is-step-active');
-          }
+          stepEl.classList.toggle('is-step-active', seqP >= threshold * 0.85);
         });
       }
 
       if (closingEl) {
         const r = closingEl.getBoundingClientRect();
-        const reached = r.top < vh * 0.88;
         const cp = compact
-          ? (reached ? 1 : 0)
-          : clamp01((vh * 0.9 - r.top) / (vh * 0.78));
+          ? clamp01((vh * 0.86 - r.top) / (vh * 0.55))
+          : clamp01((vh * 0.88 - r.top) / (vh * 0.72));
         closingEl.style.setProperty('--closing-p', cp.toFixed(4));
         closingPillars.forEach((pillar, idx) => {
-          const threshold = idx === 0 ? 0.15 : idx === 1 ? 0.42 : 0.68;
-          if (cp >= threshold) {
-            pillar.classList.add('is-pillar-active');
-          } else if (!compact && r.top > vh) {
-            pillar.classList.remove('is-pillar-active');
-          }
+          const threshold = idx === 0 ? 0.12 : idx === 1 ? 0.42 : 0.72;
+          pillar.classList.toggle('is-pillar-active', cp >= threshold);
         });
       }
     };
@@ -384,7 +406,7 @@
     });
   }
 
-  // Spotlight cursor reveal & magnetic Closing CTA (desktop fine pointer only)
+  // 07 / Cursor-following radial spotlight (Conversations panel & subtle desktop sections) + Magnetic CTA
   if (!isReducedMotion() && isFinePointer()) {
     document.querySelectorAll('.spotlight-surface').forEach(surface => {
       let targetX = 50;
@@ -437,7 +459,7 @@
     }
   }
 
-  // Seamless infinite ticker calibration (exact sequence width & consistent speed)
+  // 03 / Seamless infinite ticker calibration
   const ticker = document.querySelector('.ticker');
   const tickerTrack = document.querySelector('.ticker-track');
   if (ticker && tickerTrack) {

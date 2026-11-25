@@ -251,9 +251,13 @@
     });
   }
 
-  // Scroll-driven choreography: Hero sticky, Practice Room case-file folder, Process timelines, Spotlight parallax, Mosaic, Contact CTA
+  // Scroll-driven choreography: Hero 3-scene slideshow, Practice Room case-file folder, Process timelines, Spotlight parallax
   if (!isReducedMotion()) {
     const heroStage = document.querySelector('.hero-stage');
+    const heroSection = document.querySelector('.hero');
+    const heroVisual = document.querySelector('.hero-visual');
+    const heroSlideCounter = document.querySelector('.hero-slide-counter');
+    const heroSlideNum = document.querySelector('.hero-slide-num');
     const beliefEl = document.querySelector('.belief');
     const practiceStage = document.querySelector('.practice-stage');
     const practiceSeqEl = document.querySelector('.section-end-link');
@@ -265,11 +269,21 @@
     const contactSection = document.querySelector('.contact');
 
     const clamp01 = v => Math.max(0, Math.min(1, v));
+    const smoothstep = (edge0, edge1, x) => {
+      const t = clamp01((x - edge0) / Math.max(0.0001, edge1 - edge0));
+      return t * t * (3 - 2 * t);
+    };
     let scrollTicking = false;
     let lastScrollY = window.scrollY;
+    let lastHeroSlideNum = '03';
 
     const resetDesktopVars = () => {
       root.style.removeProperty('--hero-p');
+      if (heroVisual) {
+        heroVisual.style.setProperty('--hero-slide-p', '0');
+        heroVisual.style.setProperty('--slide2-p', '0');
+        heroVisual.style.setProperty('--slide3-p', '0');
+      }
       if (beliefEl) beliefEl.style.removeProperty('--belief-p');
       if (convSection) convSection.style.removeProperty('--conv-p');
       if (peopleEl) peopleEl.style.removeProperty('--people-p');
@@ -306,12 +320,35 @@
       const compact = isCompactViewport();
       const isTabletOrDesktop = !Boolean(mobileDrawerQuery && mobileDrawerQuery.matches);
 
-      if (heroStage && isTabletOrDesktop) {
-        const r = heroStage.getBoundingClientRect();
-        const heroSpan = Math.max(240, r.height * 0.85);
-        root.style.setProperty('--hero-p', clamp01(-r.top / heroSpan).toFixed(4));
-      } else {
-        root.style.removeProperty('--hero-p');
+      // 02 / Scroll-controlled 3-scene hero slideshow (03/03 -> 02/03 -> 01/03)
+      if (heroStage && heroSection && heroVisual) {
+        const sr = heroStage.getBoundingClientRect();
+        let slideP = 0;
+        if (isTabletOrDesktop && heroStage.offsetHeight > heroSection.offsetHeight + 48) {
+          const pinTravel = Math.max(1, heroStage.offsetHeight - heroSection.offsetHeight);
+          slideP = clamp01(-sr.top / pinTravel);
+        } else {
+          const mobileSpan = Math.max(260, heroVisual.offsetTop + heroVisual.offsetHeight * 0.65);
+          slideP = clamp01(currentY / mobileSpan);
+        }
+
+        const slide2P = smoothstep(0.16, 0.48, slideP);
+        const slide3P = smoothstep(0.54, 0.86, slideP);
+
+        heroVisual.style.setProperty('--hero-slide-p', slideP.toFixed(4));
+        heroVisual.style.setProperty('--slide2-p', slide2P.toFixed(4));
+        heroVisual.style.setProperty('--slide3-p', slide3P.toFixed(4));
+        root.style.setProperty('--hero-p', slideP.toFixed(4));
+
+        const nextSlideNum = slideP >= 0.70 ? '01' : slideP >= 0.32 ? '02' : '03';
+        if (nextSlideNum !== lastHeroSlideNum) {
+          lastHeroSlideNum = nextSlideNum;
+          if (heroSlideNum) heroSlideNum.textContent = nextSlideNum;
+          if (heroSlideCounter) {
+            const sceneOrdinal = nextSlideNum === '03' ? 1 : nextSlideNum === '02' ? 2 : 3;
+            heroSlideCounter.setAttribute('aria-label', `Hero scene ${sceneOrdinal} of 3`);
+          }
+        }
       }
 
       if (compact) {
@@ -421,16 +458,37 @@
       }
     };
 
+    let scrollRafId = 0;
     const requestScrollUpdate = () => {
       if (!scrollTicking) {
         scrollTicking = true;
-        requestAnimationFrame(updateScrollProgress);
+        scrollRafId = requestAnimationFrame(() => {
+          scrollRafId = 0;
+          updateScrollProgress();
+        });
       }
+    };
+
+    const cleanupScrollChoreography = () => {
+      if (scrollRafId) {
+        cancelAnimationFrame(scrollRafId);
+        scrollRafId = 0;
+      }
+      window.removeEventListener('scroll', requestScrollUpdate);
+      window.removeEventListener('resize', requestScrollUpdate);
+      resetDesktopVars();
     };
 
     updateScrollProgress();
     window.addEventListener('scroll', requestScrollUpdate, { passive: true });
     window.addEventListener('resize', requestScrollUpdate, { passive: true });
+    window.addEventListener('pagehide', cleanupScrollChoreography);
+
+    if (motionQuery && typeof motionQuery.addEventListener === 'function') {
+      motionQuery.addEventListener('change', event => {
+        if (event.matches) cleanupScrollChoreography();
+      });
+    }
   } else {
     revealAllImmediately();
   }

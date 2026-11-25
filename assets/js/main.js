@@ -130,7 +130,7 @@
         root.classList.add('is-hero-ready');
         window.setTimeout(() => {
           root.classList.add('is-hero-settled');
-        }, 1150);
+        }, 1340);
       });
     });
   }
@@ -153,7 +153,6 @@
     { selector: '.mosaic-card', step: 105, max: 3 },
     { selector: '.people-note', step: 0, max: 0 },
     { selector: '.closing h2', step: 0, max: 0 },
-    { selector: '.closing-pillar', step: 95, max: 3 },
     { selector: '.contact-top, .contact h2, .contact-subline, .contact-link, .contact-bottom, .contact-note', step: 70, max: 5 },
     { selector: '.footer-main > *, .footer-wordmark-stage, .footer-bottom', step: 85, max: 4 }
   ];
@@ -305,16 +304,22 @@
       });
 
       const compact = isCompactViewport();
+      const isTabletOrDesktop = !Boolean(mobileDrawerQuery && mobileDrawerQuery.matches);
+
+      if (heroStage && isTabletOrDesktop) {
+        const r = heroStage.getBoundingClientRect();
+        const heroSpan = Math.max(240, r.height * 0.85);
+        root.style.setProperty('--hero-p', clamp01(-r.top / heroSpan).toFixed(4));
+      } else {
+        root.style.removeProperty('--hero-p');
+      }
 
       if (compact) {
-        resetDesktopVars();
+        if (beliefEl) beliefEl.style.removeProperty('--belief-p');
+        if (convSection) convSection.style.removeProperty('--conv-p');
+        if (peopleEl) peopleEl.style.removeProperty('--people-p');
+        if (contactSection) contactSection.style.removeProperty('--contact-p');
       } else {
-        if (heroStage) {
-          const r = heroStage.getBoundingClientRect();
-          const heroSpan = Math.max(240, r.height * 0.85);
-          root.style.setProperty('--hero-p', clamp01(-r.top / heroSpan).toFixed(4));
-        }
-
         if (beliefEl) {
           const r = beliefEl.getBoundingClientRect();
           beliefEl.style.setProperty('--belief-p', clamp01((vh - r.top) / (vh * 0.82)).toFixed(4));
@@ -370,15 +375,42 @@
       }
 
       if (closingEl) {
+        const closingPillarsWrap = closingEl.querySelector('.closing-pillars');
         const r = closingEl.getBoundingClientRect();
-        const cp = compact
-          ? clamp01((vh * 0.86 - r.top) / (vh * 0.55))
-          : clamp01((vh * 0.88 - r.top) / (vh * 0.72));
-        closingEl.style.setProperty('--closing-p', cp.toFixed(4));
-        closingPillars.forEach((pillar, idx) => {
-          const threshold = idx === 0 ? 0.12 : idx === 1 ? 0.42 : 0.72;
-          pillar.classList.toggle('is-pillar-active', cp >= threshold);
-        });
+        // Keep closing phrase reveal linked to closing section
+        const phraseP = clamp01((vh * 0.9 - r.top) / (vh * 0.65));
+        closingEl.style.setProperty('--closing-p', phraseP.toFixed(4));
+
+        if (closingPillarsWrap) {
+          const pr = closingPillarsWrap.getBoundingClientRect();
+          const isMobileTimeline = Boolean(mobileDrawerQuery && mobileDrawerQuery.matches);
+          const startY = isMobileTimeline ? vh * 0.9 : vh * 0.92;
+          const travel = isMobileTimeline ? vh * 0.5 : vh * 0.56;
+          const lineP = clamp01((startY - pr.top) / travel);
+          closingPillarsWrap.style.setProperty('--closing-p', lineP.toFixed(4));
+
+          let midThreshold = 0.5;
+          if (isMobileTimeline && closingPillars.length >= 3) {
+            const n0 = closingPillars[0].querySelector('.pillar-node');
+            const n1 = closingPillars[1].querySelector('.pillar-node');
+            const n2 = closingPillars[2].querySelector('.pillar-node');
+            if (n0 && n1 && n2) {
+              const y0 = n0.getBoundingClientRect().top + n0.offsetHeight / 2;
+              const y1 = n1.getBoundingClientRect().top + n1.offsetHeight / 2;
+              const y2 = n2.getBoundingClientRect().top + n2.offsetHeight / 2;
+              const span = Math.max(1, y2 - y0);
+              closingPillarsWrap.style.setProperty('--mobile-track-h', `${span.toFixed(1)}px`);
+              midThreshold = clamp01((y1 - y0) / span);
+            }
+          } else {
+            closingPillarsWrap.style.removeProperty('--mobile-track-h');
+          }
+
+          closingPillars.forEach((pillar, idx) => {
+            const threshold = idx === 0 ? 0.04 : idx === 1 ? midThreshold : 0.94;
+            pillar.classList.toggle('is-pillar-active', lineP >= threshold);
+          });
+        }
       }
     };
 

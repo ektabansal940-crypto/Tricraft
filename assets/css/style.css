@@ -358,10 +358,11 @@ button:focus-visible,
 }
 
 .hero h1 {
-  font-size: clamp(50px, 7.8vw, 124px);
-  line-height: .89;
-  letter-spacing: -.07em;
-  font-weight: 500;
+  font-family: var(--serif);
+  font-size: clamp(50px, 6.2vw, 94px);
+  line-height: .96;
+  letter-spacing: -.025em;
+  font-weight: 400;
   color: var(--navy);
   margin: 0;
 }
@@ -376,8 +377,9 @@ button:focus-visible,
 .people-intro h2 em,
 .closing h2 em {
   font-family: var(--serif);
+  font-style: italic;
   font-weight: 400;
-  letter-spacing: -.04em;
+  letter-spacing: -.015em;
 }
 
 .hero h1 em {
@@ -647,10 +649,11 @@ button:focus-visible,
 }
 
 .belief-main h2 {
+  font-family: var(--serif);
   font-size: clamp(38px, 6vw, 88px);
-  line-height: .98;
-  letter-spacing: -.06em;
-  font-weight: 500;
+  line-height: .99;
+  letter-spacing: -.025em;
+  font-weight: 400;
   max-width: 920px;
   margin: 0;
   color: var(--navy);
@@ -721,10 +724,11 @@ button:focus-visible,
 .people-intro h2,
 .practice h2,
 .perspectives h2 {
+  font-family: var(--serif);
   font-size: clamp(40px, 5.8vw, 84px);
-  line-height: .95;
-  letter-spacing: -.06em;
-  font-weight: 500;
+  line-height: .96;
+  letter-spacing: -.025em;
+  font-weight: 400;
   margin: 0;
   color: var(--navy);
 }
@@ -1021,10 +1025,11 @@ button:focus-visible,
 }
 
 .article-row h3 {
-  font-size: clamp(19px, 1.8vw, 24px);
-  font-weight: 500;
-  line-height: 1.28;
-  letter-spacing: -.025em;
+  font-family: var(--serif);
+  font-size: clamp(22px, 2.2vw, 29px);
+  font-weight: 400;
+  line-height: 1.18;
+  letter-spacing: -.015em;
   margin: 10px 0 0;
   color: #fff;
   transition: color .3s var(--ease-editorial);
@@ -1245,10 +1250,11 @@ button:focus-visible,
 }
 
 .work-meta h3 {
-  font-size: clamp(20px, 1.9vw, 26px);
-  font-weight: 500;
-  line-height: 1.15;
-  letter-spacing: -.035em;
+  font-family: var(--serif);
+  font-size: clamp(24px, 2.3vw, 31px);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -.02em;
   color: var(--navy);
   margin: 8px 0 0;
 }
@@ -1561,10 +1567,11 @@ button:focus-visible,
 }
 
 .conversation-copy h2 {
+  font-family: var(--serif);
   font-size: clamp(44px, 5.8vw, 84px);
-  line-height: .91;
-  letter-spacing: -.06em;
-  font-weight: 500;
+  line-height: .94;
+  letter-spacing: -.025em;
+  font-weight: 400;
   color: #fff;
   margin: 18px 0 20px;
 }
@@ -1735,6 +1742,7 @@ button:focus-visible,
   font-size: clamp(24px, 2.5vw, 34px);
   line-height: 1.07;
   font-weight: 400;
+  letter-spacing: -.015em;
   color: var(--navy);
   margin: 18px 0 12px;
   transition: transform .4s var(--ease-editorial);
@@ -1785,10 +1793,11 @@ button:focus-visible,
 }
 
 .closing h2 {
+  font-family: var(--serif);
   font-size: clamp(38px, 5.8vw, 82px);
   line-height: 1.03;
-  letter-spacing: -.05em;
-  font-weight: 500;
+  letter-spacing: -.02em;
+  font-weight: 400;
   max-width: 1100px;
   color: var(--navy);
   margin: clamp(36px, 4.2vw, 52px) 0 clamp(34px, 4vw, 48px);
@@ -1799,21 +1808,22 @@ button:focus-visible,
 }
 
 .closing-pillars {
+  --pillar-gap: 30px;
   position: relative;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   padding-top: 22px;
-  gap: 24px 30px;
+  gap: 24px var(--pillar-gap);
 }
 
 .closing-pillars::before {
   content: "";
   position: absolute;
   top: 40px;
-  left: 0;
-  right: 0;
+  left: 19px;
+  right: calc(33.3333% - 19px - var(--pillar-gap) * .6667);
   height: 2px;
-  background: rgba(10, 36, 69, .22);
+  background: rgba(255, 255, 255, .88);
   pointer-events: none;
 }
 
@@ -1821,13 +1831,14 @@ button:focus-visible,
   content: "";
   position: absolute;
   top: 40px;
-  left: 0;
-  right: 0;
+  left: 19px;
+  right: calc(33.3333% - 19px - var(--pillar-gap) * .6667);
   height: 2px;
-  background: #fff;
-  transform: scaleX(var(--closing-p, 1));
+  background: var(--navy);
+  transform: scaleX(var(--closing-p, 0));
   transform-origin: left;
-  transition: transform .15s linear;
+  transition: transform .08s linear;
+  will-change: transform;
   pointer-events: none;
 }
 
@@ -1840,19 +1851,18 @@ button:focus-visible,
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: var(--blue);
-  border: 1.5px solid rgba(10, 36, 69, .38);
+  background: var(--navy);
+  border: 1.5px solid var(--navy);
   display: grid;
   place-items: center;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: .1em;
-  color: var(--navy);
+  color: #fff;
   margin-bottom: 18px;
-  transition: background-color .4s var(--ease-editorial),
-              border-color .4s var(--ease-editorial),
-              color .4s var(--ease-editorial),
-              transform .4s var(--ease-editorial);
+  transition: transform .42s var(--ease-out-expo),
+              opacity .38s var(--ease-editorial),
+              box-shadow .42s var(--ease-editorial);
 }
 
 .pillar-title {
@@ -1870,24 +1880,33 @@ button:focus-visible,
   margin: 8px 0 0;
 }
 
-.motion-ready .closing-pillar {
-  transition: opacity .45s var(--ease-editorial),
-              transform .75s var(--ease-out-expo) var(--stagger-delay, 0ms);
-}
-
-.motion-ready .closing-pillar.is-visible {
+.motion-ready .closing-pillar .pillar-node {
   opacity: .56;
+  transform: scale(.94);
 }
 
-.motion-ready .closing-pillar.is-pillar-active {
-  opacity: 1;
+.motion-ready .closing-pillar .pillar-title,
+.motion-ready .closing-pillar p {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity .48s var(--ease-out-expo),
+              transform .54s var(--ease-out-expo);
+}
+
+.motion-ready .closing-pillar p {
+  transition-delay: 55ms;
 }
 
 .motion-ready .closing-pillar.is-pillar-active .pillar-node {
-  background: var(--navy);
-  border-color: var(--navy);
-  color: #fff;
-  transform: scale(1.06);
+  opacity: 1;
+  transform: scale(1.08);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, .62), 0 8px 20px rgba(10, 36, 69, .18);
+}
+
+.motion-ready .closing-pillar.is-pillar-active .pillar-title,
+.motion-ready .closing-pillar.is-pillar-active p {
+  opacity: 1;
+  transform: none;
 }
 
 /* ==========================================================================
@@ -1953,10 +1972,11 @@ button:focus-visible,
 }
 
 .contact h2 {
+  font-family: var(--serif);
   font-size: clamp(42px, 6.2vw, 94px);
-  line-height: .9;
-  letter-spacing: -.065em;
-  font-weight: 500;
+  line-height: .94;
+  letter-spacing: -.025em;
+  font-weight: 400;
   color: #fff;
   margin: 0 0 18px;
 }
@@ -2156,24 +2176,53 @@ button:focus-visible,
   transform: none;
 }
 
-/* Hero Masked Entrance */
+/* Hero Masked Entrance — Coordinated Moziro-Inspired Sequence */
+.motion-ready .site-header {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.motion-ready.is-hero-ready .site-header {
+  opacity: 1;
+  transform: none;
+  transition: opacity .5s var(--ease-out-expo) 0ms,
+              transform .55s var(--ease-out-expo) 0ms,
+              background-color .35s var(--ease-editorial),
+              box-shadow .35s var(--ease-editorial),
+              border-color .35s var(--ease-editorial);
+}
+
 .motion-ready .hero-topline,
 .motion-ready .hero-kicker,
 .motion-ready .hero-description,
 .motion-ready .hero-bottom .text-link,
 .motion-ready .hero-foot {
   opacity: 0;
-  transform: translateY(18px);
+  transform: translateY(16px);
 }
 
 .motion-ready .hero-kicker {
-  filter: blur(4px);
+  filter: blur(3px);
 }
 
 .motion-ready .hero h1 .line-inner {
   opacity: 0;
-  filter: blur(6px);
+  filter: blur(5px);
   transform: translateY(108%);
+}
+
+.motion-ready .hero h1 em {
+  display: inline-block;
+  padding-right: .08em;
+  margin-right: -.08em;
+  opacity: 0;
+  clip-path: inset(0 100% -12% 0);
+  transform: translateY(12%);
+}
+
+.motion-ready .hero-bottom .text-link span {
+  opacity: 0;
+  transform: translate(-4px, -4px);
 }
 
 .motion-ready .hero-visual {
@@ -2181,95 +2230,122 @@ button:focus-visible,
 }
 
 .motion-ready .hero-visual img {
-  transform: scale(1.09);
+  transform: scale(1.06);
 }
 
 .motion-ready .hero-visual .visual-note {
   opacity: 0;
-  transform: translateY(8px);
+  transform: translateY(10px);
 }
 
 .motion-ready.is-hero-ready .hero-topline {
   opacity: 1;
   transform: none;
-  transition: opacity .65s var(--ease-out-expo) 0ms, transform .65s var(--ease-out-expo) 0ms;
+  transition: opacity .62s var(--ease-out-expo) 40ms, transform .62s var(--ease-out-expo) 40ms;
 }
 
 .motion-ready.is-hero-ready .hero-kicker {
   opacity: 1;
   filter: blur(0px);
   transform: none;
-  transition: opacity .72s var(--ease-out-expo) 60ms,
-    transform .72s var(--ease-out-expo) 60ms,
-    filter .72s var(--ease-out-expo) 60ms;
+  transition: opacity .68s var(--ease-out-expo) 90ms,
+    transform .68s var(--ease-out-expo) 90ms,
+    filter .68s var(--ease-out-expo) 90ms;
 }
 
 .motion-ready.is-hero-ready .hero h1 .line-mask:nth-child(1) .line-inner {
   opacity: 1;
   filter: blur(0px);
   transform: none;
-  transition: opacity .84s var(--ease-out-expo) 110ms,
-    transform .86s var(--ease-out-expo) 110ms,
-    filter .84s var(--ease-out-expo) 110ms;
+  transition: opacity .82s var(--ease-out-expo) 140ms,
+    transform .86s var(--ease-out-expo) 140ms,
+    filter .82s var(--ease-out-expo) 140ms;
 }
 
 .motion-ready.is-hero-ready .hero h1 .line-mask:nth-child(2) .line-inner {
   opacity: 1;
   filter: blur(0px);
   transform: none;
-  transition: opacity .84s var(--ease-out-expo) 220ms,
-    transform .86s var(--ease-out-expo) 220ms,
-    filter .84s var(--ease-out-expo) 220ms;
+  transition: opacity .82s var(--ease-out-expo) 230ms,
+    transform .86s var(--ease-out-expo) 230ms,
+    filter .82s var(--ease-out-expo) 230ms;
+}
+
+.motion-ready.is-hero-ready .hero h1 em {
+  opacity: 1;
+  clip-path: inset(0 -12% -12% -2%);
+  transform: translateY(0);
+  transition: clip-path .84s var(--ease-out-expo) 330ms,
+    transform .76s var(--ease-out-expo) 330ms,
+    opacity .45s var(--ease-editorial) 330ms;
+}
+
+.motion-ready.is-hero-ready .hero-visual {
+  clip-path: inset(0 0 0 0);
+  transition: clip-path 1.02s var(--ease-out-expo) 250ms;
+}
+
+.motion-ready.is-hero-ready .hero-visual img {
+  transform: scale(1);
+  transition: transform 1.15s var(--ease-out-expo) 250ms;
 }
 
 .motion-ready.is-hero-ready .hero-description {
   opacity: 1;
   transform: none;
-  transition: opacity .72s var(--ease-out-expo) 330ms, transform .72s var(--ease-out-expo) 330ms;
+  transition: opacity .72s var(--ease-out-expo) 450ms, transform .72s var(--ease-out-expo) 450ms;
 }
 
 .motion-ready.is-hero-ready .hero-bottom .text-link {
   opacity: 1;
   transform: none;
-  transition: opacity .72s var(--ease-out-expo) 410ms,
-    transform .72s var(--ease-out-expo) 410ms,
+  transition: opacity .7s var(--ease-out-expo) 540ms,
+    transform .7s var(--ease-out-expo) 540ms,
     color .3s var(--ease-editorial);
 }
 
-.motion-ready.is-hero-ready .hero-visual {
-  clip-path: inset(0 0 0 0);
-  transition: clip-path .96s var(--ease-out-expo) 140ms;
+.motion-ready.is-hero-ready .hero-bottom .text-link span {
+  opacity: 1;
+  transform: none;
+  transition: opacity .5s var(--ease-editorial) 620ms,
+    transform .55s var(--ease-out-expo) 620ms;
 }
 
-.motion-ready.is-hero-ready .hero-visual img {
-  transform: scale(1);
-  transition: transform 1.15s var(--ease-out-expo) 140ms;
+.motion-ready.is-hero-ready .hero-bottom .text-link:hover span,
+.motion-ready.is-hero-ready .hero-bottom .text-link:focus-visible span {
+  transform: translate(3px, 3px);
+  transition-delay: 0ms;
 }
 
 .motion-ready.is-hero-ready .hero-visual .visual-note {
   opacity: 1;
   transform: none;
-  transition: opacity .55s var(--ease-editorial) 540ms, transform .55s var(--ease-editorial) 540ms;
+  transition: opacity .58s var(--ease-editorial) 650ms, transform .58s var(--ease-editorial) 650ms;
 }
 
 .motion-ready.is-hero-ready .hero-foot {
   opacity: 1;
   transform: none;
-  transition: opacity .65s var(--ease-out-expo) 480ms, transform .65s var(--ease-out-expo) 480ms;
+  transition: opacity .65s var(--ease-out-expo) 620ms, transform .65s var(--ease-out-expo) 620ms;
 }
 
 /* Desktop-only scroll-driven parallax & sticky depth */
 @media (min-width: 1025px) and (hover: hover) and (pointer: fine) {
   .motion-ready.is-hero-settled .hero {
-    transform: scale(calc(1 - var(--hero-p, 0) * .032));
-    opacity: calc(1 - var(--hero-p, 0) * .45);
+    transform: scale(calc(1 - var(--hero-p, 0) * .028));
+    opacity: calc(1 - var(--hero-p, 0) * .42);
     transition: transform .08s linear, opacity .08s linear;
+  }
+
+  .motion-ready.is-hero-settled .hero-copy {
+    transform: translateY(calc(var(--hero-p, 0) * -16px));
+    transition: transform .08s linear;
   }
 
   .motion-ready.is-hero-settled .hero-visual img {
     --hero-hover: 0;
-    transform: scale(calc(1 + var(--hero-p, 0) * .055 + var(--hero-hover)));
-    transition: transform .45s var(--ease-editorial) 0s;
+    transform: translateY(calc(var(--hero-p, 0) * -18px)) scale(calc(1 + var(--hero-p, 0) * .055 + var(--hero-hover)));
+    transition: transform .42s var(--ease-editorial) 0s;
   }
 
   .motion-ready.is-hero-settled .hero-visual:hover img {
@@ -2539,6 +2615,12 @@ button:focus-visible,
 
   .hero-visual {
     height: clamp(320px, 43vw, 460px);
+  }
+
+  /* Tablet subtle scroll-linked image movement & calibrated timing */
+  .motion-ready.is-hero-settled .hero-visual img {
+    transform: translateY(calc(var(--hero-p, 0) * -12px)) scale(calc(1 + var(--hero-p, 0) * .035));
+    transition: transform .12s linear;
   }
 
   .services-heading>p,
@@ -2813,7 +2895,12 @@ button:focus-visible,
     font-size: 13px;
   }
 
-  /* Hero mobile */
+  /* Hero mobile — crisp stacked reveal without heavy blur */
+  .motion-ready .hero-kicker,
+  .motion-ready .hero h1 .line-inner {
+    filter: none;
+  }
+
   .hero {
     padding-top: 22px;
     padding-bottom: 22px;
@@ -2841,9 +2928,9 @@ button:focus-visible,
   }
 
   .hero h1 {
-    font-size: clamp(38px, 11.4vw, 62px);
-    line-height: .94;
-    letter-spacing: -.05em;
+    font-size: clamp(40px, 11.8vw, 64px);
+    line-height: .95;
+    letter-spacing: -.02em;
   }
 
   .hero-bottom {
@@ -2952,7 +3039,7 @@ button:focus-visible,
   .belief-main h2 {
     font-size: clamp(34px, 9.6vw, 54px);
     line-height: 1.01;
-    letter-spacing: -.045em;
+    letter-spacing: -.02em;
   }
 
   .belief-foot {
@@ -2985,7 +3072,7 @@ button:focus-visible,
   .practice h2,
   .perspectives h2 {
     font-size: clamp(36px, 10vw, 54px);
-    letter-spacing: -.045em;
+    letter-spacing: -.02em;
   }
 
   .services-heading>p,
@@ -3095,7 +3182,7 @@ button:focus-visible,
   }
 
   .work-meta h3 {
-    font-size: clamp(21px, 5.8vw, 26px);
+    font-size: clamp(23px, 6.2vw, 28px);
   }
 
   .work-summary {
@@ -3188,7 +3275,7 @@ button:focus-visible,
   .closing h2 {
     font-size: clamp(33px, 9.2vw, 54px);
     line-height: 1.06;
-    letter-spacing: -.04em;
+    letter-spacing: -.02em;
     margin: 30px 0 28px;
   }
 
@@ -3200,22 +3287,22 @@ button:focus-visible,
   }
 
   .closing-pillars::before {
-    top: 18px;
-    bottom: 18px;
-    left: 18px;
+    top: 19px;
+    bottom: auto;
+    left: 19px;
     right: auto;
     width: 2px;
-    height: auto;
+    height: var(--mobile-track-h, calc(100% - 62px));
   }
 
   .motion-ready .closing-pillars::after {
-    top: 18px;
-    bottom: 18px;
-    left: 18px;
+    top: 19px;
+    bottom: auto;
+    left: 19px;
     right: auto;
     width: 2px;
-    height: auto;
-    transform: scaleY(var(--closing-p, 1));
+    height: var(--mobile-track-h, calc(100% - 62px));
+    transform: scaleY(var(--closing-p, 0));
     transform-origin: top;
   }
 
@@ -3244,9 +3331,9 @@ button:focus-visible,
   }
 
   .contact h2 {
-    font-size: clamp(34px, 10vw, 56px);
-    line-height: .94;
-    letter-spacing: -.05em;
+    font-size: clamp(36px, 10.4vw, 56px);
+    line-height: .96;
+    letter-spacing: -.02em;
     margin: 0 0 14px;
   }
 
@@ -3334,7 +3421,7 @@ button:focus-visible,
   }
 
   .hero h1 {
-    font-size: 36px;
+    font-size: 38px;
   }
 
   .belief-visual {
@@ -3342,11 +3429,11 @@ button:focus-visible,
   }
 
   .contact h2 {
-    font-size: 32px;
+    font-size: 34px;
   }
 
   .conversation-copy h2 {
-    font-size: 36px;
+    font-size: 38px;
   }
 
   .footer-mega-wordmark {
@@ -3419,6 +3506,9 @@ button:focus-visible,
   .closing-phrase,
   .process-step,
   .closing-pillar,
+  .closing-pillar .pillar-node,
+  .closing-pillar .pillar-title,
+  .closing-pillar p,
   .work-card,
   .article-row,
   .article-copy,
@@ -3428,13 +3518,17 @@ button:focus-visible,
   .motion-ready .section-label::after,
   .motion-ready .process-track-fill,
   .motion-ready .closing-pillars::after,
+  .motion-ready .site-header,
   .motion-ready .hero,
+  .motion-ready .hero-copy,
   .motion-ready .hero-topline,
   .motion-ready .hero-kicker,
   .motion-ready .hero-description,
   .motion-ready .hero-bottom .text-link,
+  .motion-ready .hero-bottom .text-link span,
   .motion-ready .hero-foot,
   .motion-ready .hero h1 .line-inner,
+  .motion-ready .hero h1 em,
   .motion-ready .hero-visual,
   .motion-ready .hero-visual img,
   .motion-ready .hero-visual .visual-note,

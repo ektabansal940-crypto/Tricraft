@@ -173,12 +173,14 @@
     });
   });
 
-  const mediaTargets = Array.from(document.querySelectorAll('.work-image, .conversation-art'));
-  mediaTargets.forEach((el, idx) => {
-    el.classList.add('reveal-media');
-    if (el.classList.contains('work-image')) {
-      el.style.setProperty('--stagger-delay', `${Math.min(idx, 2) * 85}ms`);
-    }
+  const mediaTargets = Array.from(
+    new Set(document.querySelectorAll('.work-image, .conversation-art, .reveal-media'))
+  );
+  mediaTargets.forEach(el => el.classList.add('reveal-media'));
+  ['.service-media', '.article-thumb', '.work-image'].forEach(sel => {
+    document.querySelectorAll(sel).forEach((el, idx) => {
+      el.style.setProperty('--stagger-delay', `${Math.min(idx, 3) * 85}ms`);
+    });
   });
 
   const allTargets = [...revealTargets, ...mediaTargets];
@@ -235,7 +237,7 @@
   setupInteractiveGroup('.service-grid', '.service-card', true);
   setupInteractiveGroup('.article-list', '.article-row');
   setupInteractiveGroup('.work-grid', '.work-card');
-  setupInteractiveGroup('.people-prompts', '> div');
+  setupInteractiveGroup('.people-prompts', ':scope > div');
 
   // Scroll-driven choreography (adapted for desktop vs tablet/mobile)
   if (!isReducedMotion()) {
@@ -325,25 +327,35 @@
       // Lightweight sequence & closing pillar activation across all viewports
       if (practiceSeqEl) {
         const r = practiceSeqEl.getBoundingClientRect();
+        const reached = r.top < vh * 0.92;
         const seqP = compact
-          ? (r.top < vh * 0.92 ? 1 : 0)
+          ? (reached ? 1 : 0)
           : clamp01((vh * 0.92 - r.top) / (vh * 0.45));
         practiceSeqEl.style.setProperty('--practice-seq-p', seqP.toFixed(4));
         processSteps.forEach((stepEl, idx) => {
           const threshold = idx / Math.max(1, processSteps.length);
-          stepEl.classList.toggle('is-step-active', seqP >= threshold * 0.85);
+          if (seqP >= threshold * 0.85) {
+            stepEl.classList.add('is-step-active');
+          } else if (!compact) {
+            stepEl.classList.remove('is-step-active');
+          }
         });
       }
 
       if (closingEl) {
         const r = closingEl.getBoundingClientRect();
+        const reached = r.top < vh * 0.88;
         const cp = compact
-          ? (r.top < vh * 0.88 ? 1 : 0)
+          ? (reached ? 1 : 0)
           : clamp01((vh * 0.9 - r.top) / (vh * 0.78));
         closingEl.style.setProperty('--closing-p', cp.toFixed(4));
         closingPillars.forEach((pillar, idx) => {
           const threshold = idx === 0 ? 0.15 : idx === 1 ? 0.42 : 0.68;
-          pillar.classList.toggle('is-pillar-active', cp >= threshold);
+          if (cp >= threshold) {
+            pillar.classList.add('is-pillar-active');
+          } else if (!compact && r.top > vh) {
+            pillar.classList.remove('is-pillar-active');
+          }
         });
       }
     };

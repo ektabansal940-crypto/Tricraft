@@ -9,8 +9,7 @@
   const isCompactViewport = () =>
     (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) || !isFinePointer();
   const isDesktopFolderPinned = () =>
-    Boolean(window.matchMedia && window.matchMedia('(min-width: 960px) and (min-height: 700px)').matches) &&
-    isFinePointer();
+    Boolean(window.matchMedia && window.matchMedia('(min-width: 960px) and (min-height: 560px)').matches);
 
   const header = document.querySelector('.site-header');
   const toggle = document.querySelector('.menu-toggle');
@@ -277,6 +276,7 @@
       if (contactSection) contactSection.style.removeProperty('--contact-p');
       if (folderShell) {
         folderShell.style.removeProperty('--folder-rise');
+        folderShell.style.removeProperty('--folder-appear');
         folderShell.style.removeProperty('--folder-tuck');
         folderShell.style.removeProperty('--folder-exit');
       }
@@ -341,22 +341,29 @@
         }
       }
 
-      // 04 / Layered Case File Folder scroll progress (desktop pinned stage)
+      // 05 / 5-Stage Case File Folder scroll progress (pinned on desktop, continuous tuck on compact)
       if (practiceStage && folderShell) {
         if (isDesktopFolderPinned()) {
           const r = practiceStage.getBoundingClientRect();
-          const pinRange = Math.max(1, r.height - vh * 0.65);
-          // Rise cards into clean spread (0..0.24), hold readable spread (0.24..0.38), tuck into folder (0.38..0.82)
-          const rawP = clamp01((vh * 0.44 - r.top) / pinRange);
-          const rise = clamp01(rawP / 0.24);
-          const tuck = clamp01((rawP - 0.38) / 0.44);
-          const exit = clamp01((rawP - 0.84) / 0.16);
+          const pinRange = Math.max(1, r.height - vh * 0.68);
+          // Stage 1-2 (0..0.28): cards rise staggered into overlapping portrait fan
+          // Stage 3   (0.24..0.46): folder back & front panel rise cleanly
+          // Stage 4-5 (0.46..0.88): cards slide smoothly down into folder pocket
+          const rawP = clamp01((vh * 0.56 - r.top) / pinRange);
+          const rise = clamp01(rawP / 0.28);
+          const appear = clamp01((rawP - 0.14) / 0.26);
+          const tuck = clamp01((rawP - 0.44) / 0.44);
+          const exit = clamp01((rawP - 0.88) / 0.12);
           folderShell.style.setProperty('--folder-rise', rise.toFixed(4));
+          folderShell.style.setProperty('--folder-appear', appear.toFixed(4));
           folderShell.style.setProperty('--folder-tuck', tuck.toFixed(4));
           folderShell.style.setProperty('--folder-exit', exit.toFixed(4));
         } else {
+          const sr = folderShell.getBoundingClientRect();
+          const mobileTuck = clamp01((vh * 0.48 - sr.top) / Math.max(1, sr.height * 0.72));
           folderShell.style.removeProperty('--folder-rise');
-          folderShell.style.removeProperty('--folder-tuck');
+          folderShell.style.removeProperty('--folder-appear');
+          folderShell.style.setProperty('--folder-tuck', mobileTuck.toFixed(4));
           folderShell.style.removeProperty('--folder-exit');
         }
       }
@@ -438,9 +445,71 @@
     });
   }
 
-  // 07 / Cursor-following radial spotlight (Conversations panel & subtle desktop sections) + Magnetic CTA
+  // 07 / Cursor-following radial torchlight & subtle ambient spotlight + Magnetic CTA
   if (!isReducedMotion() && isFinePointer()) {
-    document.querySelectorAll('.spotlight-surface').forEach(surface => {
+    document.querySelectorAll('.torchlight-surface').forEach(surface => {
+      const rect0 = surface.getBoundingClientRect();
+      let targetX = rect0.width ? rect0.width * 0.66 : 600;
+      let targetY = rect0.height ? rect0.height * 0.46 : 240;
+      let currentX = targetX;
+      let currentY = targetY;
+      let targetAlpha = 0;
+      let currentAlpha = 0;
+      let rafId = 0;
+
+      const animateTorch = () => {
+        currentX += (targetX - currentX) * 0.20;
+        currentY += (targetY - currentY) * 0.20;
+        currentAlpha += (targetAlpha - currentAlpha) * 0.24;
+        surface.style.setProperty('--mx', `${currentX.toFixed(1)}px`);
+        surface.style.setProperty('--my', `${currentY.toFixed(1)}px`);
+        surface.style.setProperty('--torch-alpha', currentAlpha.toFixed(3));
+        const moving =
+          Math.abs(targetX - currentX) > 0.4 ||
+          Math.abs(targetY - currentY) > 0.4 ||
+          Math.abs(targetAlpha - currentAlpha) > 0.008;
+        if (moving) {
+          rafId = requestAnimationFrame(animateTorch);
+        } else {
+          currentAlpha = targetAlpha;
+          surface.style.setProperty('--torch-alpha', currentAlpha.toFixed(3));
+          rafId = 0;
+        }
+      };
+
+      surface.addEventListener('pointerenter', e => {
+        if (e.pointerType && e.pointerType !== 'mouse') return;
+        const r = surface.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        const px = Math.max(0, Math.min(r.width, e.clientX - r.left));
+        const py = Math.max(0, Math.min(r.height, e.clientY - r.top));
+        if (currentAlpha < 0.05) {
+          currentX = px;
+          currentY = py;
+        }
+        targetX = px;
+        targetY = py;
+        targetAlpha = 1;
+        if (!rafId) rafId = requestAnimationFrame(animateTorch);
+      });
+
+      surface.addEventListener('pointermove', e => {
+        if (e.pointerType && e.pointerType !== 'mouse') return;
+        const r = surface.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        targetX = Math.max(0, Math.min(r.width, e.clientX - r.left));
+        targetY = Math.max(0, Math.min(r.height, e.clientY - r.top));
+        targetAlpha = 1;
+        if (!rafId) rafId = requestAnimationFrame(animateTorch);
+      });
+
+      surface.addEventListener('pointerleave', () => {
+        targetAlpha = 0;
+        if (!rafId) rafId = requestAnimationFrame(animateTorch);
+      });
+    });
+
+    document.querySelectorAll('.spotlight-surface:not(.torchlight-surface)').forEach(surface => {
       let targetX = 50;
       let targetY = 50;
       let currentX = 50;

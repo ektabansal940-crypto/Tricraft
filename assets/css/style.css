@@ -652,22 +652,22 @@ button:focus-visible,
    02 / What We Believe
    ========================================================================== */
 .belief {
-  padding-top: clamp(72px, 8vw, 110px);
-  padding-bottom: clamp(76px, 8.5vw, 120px);
+  padding-top: clamp(58px, 6.2vw, 84px);
+  padding-bottom: clamp(44px, 4.3vw, 62px);
 }
 
 .belief-grid {
   display: grid;
   grid-template-columns: 24% 1fr;
   gap: 5.5%;
-  align-items: start;
-  padding-top: clamp(36px, 4vw, 55px);
+  align-items: center;
+  padding-top: clamp(32px, 3.8vw, 48px);
 }
 
 .belief-aside-col {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   min-width: 0;
 }
 
@@ -690,8 +690,8 @@ button:focus-visible,
 .belief-visual {
   position: relative;
   width: 100%;
-  max-width: 220px;
-  aspect-ratio: 3 / 4;
+  max-width: 210px;
+  aspect-ratio: 4 / 5;
   background: var(--blue);
   overflow: hidden;
 }
@@ -787,7 +787,7 @@ button:focus-visible,
    05 (Ref) / Areas of Expertise: Four Interactive Horizontal Rows
    ========================================================================== */
 .services {
-  padding-top: clamp(70px, 7.5vw, 100px);
+  padding-top: clamp(44px, 4.3vw, 62px);
   padding-bottom: clamp(74px, 8vw, 105px);
   background: var(--paper);
 }
@@ -2780,6 +2780,15 @@ button:focus-visible,
     height: clamp(320px, 43vw, 460px);
   }
 
+  .belief {
+    padding-top: 56px;
+    padding-bottom: 40px;
+  }
+
+  .services {
+    padding-top: 38px;
+  }
+
   .services-heading>p,
   .people-intro>p,
   .perspectives-heading>p,
@@ -3222,8 +3231,8 @@ button:focus-visible,
 
   /* 02 / Belief mobile */
   .belief {
-    padding-top: 62px;
-    padding-bottom: 66px;
+    padding-top: 46px;
+    padding-bottom: 28px;
   }
 
   .belief-grid {
@@ -3279,8 +3288,8 @@ button:focus-visible,
 
   /* 03 / Expertise mobile — stacked interactive rows */
   .services {
-    padding-top: 62px;
-    padding-bottom: 66px;
+    padding-top: 26px;
+    padding-bottom: 58px;
   }
 
   .services-heading,

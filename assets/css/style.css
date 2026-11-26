@@ -653,7 +653,7 @@ button:focus-visible,
    ========================================================================== */
 .belief {
   padding-top: clamp(58px, 6.2vw, 84px);
-  padding-bottom: clamp(44px, 4.3vw, 62px);
+  padding-bottom: clamp(16px, 1.4vw, 21px);
 }
 
 .belief .section-label,
@@ -795,7 +795,7 @@ button:focus-visible,
    05 (Ref) / Areas of Expertise: Four Interactive Horizontal Rows
    ========================================================================== */
 .services {
-  padding-top: clamp(44px, 4.3vw, 62px);
+  padding-top: clamp(16px, 1.4vw, 20px);
   padding-bottom: clamp(74px, 8vw, 105px);
   background: var(--paper);
 }
@@ -2816,11 +2816,11 @@ button:focus-visible,
 
   .belief {
     padding-top: 56px;
-    padding-bottom: 40px;
+    padding-bottom: 18px;
   }
 
   .services {
-    padding-top: 38px;
+    padding-top: 17px;
   }
 
   .services-heading>p,
@@ -3266,7 +3266,7 @@ button:focus-visible,
   /* 02 / Belief mobile */
   .belief {
     padding-top: 46px;
-    padding-bottom: 28px;
+    padding-bottom: 14px;
   }
 
   .belief-grid {
@@ -3322,7 +3322,7 @@ button:focus-visible,
 
   /* 03 / Expertise mobile — stacked interactive rows */
   .services {
-    padding-top: 26px;
+    padding-top: 14px;
     padding-bottom: 58px;
   }
 

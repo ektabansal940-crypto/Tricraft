@@ -656,9 +656,14 @@ button:focus-visible,
   padding-bottom: clamp(44px, 4.3vw, 62px);
 }
 
+.belief .section-label,
+.services .section-label {
+  border-bottom: 0;
+}
+
 .belief-grid {
   display: grid;
-  grid-template-columns: 24% 1fr;
+  grid-template-columns: 26% 1fr;
   gap: 5.5%;
   align-items: center;
   padding-top: clamp(32px, 3.8vw, 48px);
@@ -690,7 +695,7 @@ button:focus-visible,
 .belief-visual {
   position: relative;
   width: 100%;
-  max-width: 210px;
+  max-width: 242px;
   aspect-ratio: 4 / 5;
   background: var(--blue);
   overflow: hidden;
@@ -706,11 +711,14 @@ button:focus-visible,
 
 .belief-visual img {
   filter: saturate(.82) contrast(1.04);
-  transition: transform .8s var(--ease-editorial);
+  transition: transform .65s var(--ease-editorial);
 }
 
-.belief-visual:hover img {
-  transform: scale(1.04);
+@media (hover: hover) and (pointer: fine) {
+  .belief-visual:hover img,
+  .belief-visual.is-visible:hover img {
+    transform: scale(1.04);
+  }
 }
 
 .belief-visual figcaption {
@@ -2583,6 +2591,11 @@ button:focus-visible,
   pointer-events: none;
 }
 
+.motion-ready .belief .section-label::after,
+.motion-ready .services .section-label::after {
+  display: none;
+}
+
 .motion-ready .section-label.is-visible::after {
   transform: scaleX(1);
 }
@@ -2681,6 +2694,27 @@ button:focus-visible,
 
 .reveal-media.reveal-left {
   clip-path: inset(0 100% 0 0);
+}
+
+.belief-visual.reveal-media.reveal-left {
+  clip-path: inset(0 100% 0 0);
+  opacity: .15;
+  transition: clip-path .72s var(--ease-out-expo), opacity .62s var(--ease-editorial);
+}
+
+.belief-visual.reveal-media img {
+  transform: scale(1.07);
+  transition: transform .76s var(--ease-out-expo);
+}
+
+.belief-visual.reveal-media.is-visible {
+  clip-path: inset(0 0 0 0);
+  opacity: 1;
+}
+
+.belief-visual.reveal-media.is-visible img {
+  transform: scale(1);
+  transition: transform .65s var(--ease-editorial);
 }
 
 .reveal-media.reveal-down {
@@ -2857,12 +2891,12 @@ button:focus-visible,
   }
 
   .belief-grid {
-    grid-template-columns: 28% 1fr;
+    grid-template-columns: 30% 1fr;
     gap: 5%;
   }
 
   .belief-visual {
-    max-width: 190px;
+    max-width: 215px;
   }
 
   .service-card {
@@ -3260,7 +3294,7 @@ button:focus-visible,
   }
 
   .belief-visual {
-    width: 118px;
+    width: 136px;
     max-width: none;
     flex-shrink: 0;
   }
@@ -3707,7 +3741,7 @@ button:focus-visible,
   }
 
   .belief-visual {
-    width: 98px;
+    width: 112px;
   }
 
   .contact h2 {

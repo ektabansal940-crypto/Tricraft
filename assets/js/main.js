@@ -90,11 +90,29 @@
 
   // Header scroll elevation & active section indicator
   const updateHeaderState = () => {
-    if (!header) return;
-    header.classList.toggle('is-scrolled', window.scrollY > 18);
+    if (header) header.classList.toggle('is-scrolled', window.scrollY > 18);
   };
   updateHeaderState();
   window.addEventListener('scroll', updateHeaderState, { passive: true });
+
+  // Functional Back-to-Top navigation to exact top of Hero
+  const scrollToHeroTop = event => {
+    if (event) event.preventDefault();
+    if (nav && nav.classList.contains('is-open') && toggle) {
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-label', 'Open navigation');
+      nav.classList.remove('is-open');
+    }
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: isReducedMotion() ? 'auto' : 'smooth'
+    });
+  };
+
+  document.querySelectorAll('.back-top, .footer-wordmark, .header-logo[href="#top"]').forEach(ctrl => {
+    ctrl.addEventListener('click', scrollToHeroTop);
+  });
 
   if (nav && 'IntersectionObserver' in window) {
     const navLinks = Array.from(nav.querySelectorAll('a[href^="#"]'));
@@ -129,7 +147,7 @@
         root.classList.add('is-hero-ready');
         window.setTimeout(() => {
           root.classList.add('is-hero-settled');
-        }, 1460);
+        }, 1200);
       });
     });
   }
@@ -147,10 +165,8 @@
     { selector: '.editorial-disclaimer', step: 0, max: 0 },
     { selector: '.practice-intro > *', step: 85, max: 2 },
     { selector: '.section-end-link', step: 0, max: 0 },
+    { selector: '.thinking-copy > *', step: 75, max: 4 },
     { selector: '.conversation-copy > *', step: 75, max: 4 },
-    { selector: '.people-intro > *', step: 85, max: 2 },
-    { selector: '.mosaic-card', step: 105, max: 3 },
-    { selector: '.people-note', step: 0, max: 0 },
     { selector: '.closing h2', step: 0, max: 0 },
     { selector: '.contact-top, .contact h2, .contact-subline, .contact-link, .contact-bottom, .contact-note', step: 70, max: 5 },
     { selector: '.footer-main > *, .footer-wordmark-stage, .footer-bottom', step: 85, max: 4 }
@@ -160,10 +176,6 @@
   staggerGroups.forEach(group => {
     document.querySelectorAll(group.selector).forEach((el, idx) => {
       el.classList.add('reveal');
-      if (group.selector === '.mosaic-card') {
-        if (idx === 0) el.classList.add('reveal-left');
-        if (idx === 2) el.classList.add('reveal-right');
-      }
       if (group.step > 0 || group.offset) {
         const capped = group.max ? Math.min(idx, group.max) : idx;
         const delay = (group.offset || 0) + capped * group.step;
@@ -181,10 +193,26 @@
   });
 
   const allTargets = [...revealTargets, ...mediaTargets];
+  const pendingTargets = new Set(allTargets);
   let revealObserver = null;
+
+  // Declare folder references before revealAllImmediately() runs on reduced-motion / no-IO browsers
+  const folderShell = document.querySelector('.case-folder-shell');
+  const folderToggle = document.querySelector('.folder-toggle');
+  const syncFolderLabel = opened => {
+    if (!folderToggle) return;
+    folderToggle.setAttribute('aria-expanded', String(opened));
+    const label = folderToggle.querySelector('span');
+    if (label) label.textContent = opened ? 'Tuck sheets' : 'Spread sheets';
+  };
 
   const revealAllImmediately = () => {
     allTargets.forEach(el => el.classList.add('is-visible'));
+    pendingTargets.clear();
+    if (folderShell) {
+      folderShell.classList.add('is-folder-opened');
+      syncFolderLabel(true);
+    }
     document.querySelectorAll('.process-step').forEach(s => s.classList.add('is-step-active'));
     document.querySelectorAll('.closing-pillar').forEach(p => p.classList.add('is-pillar-active'));
   };
@@ -194,6 +222,7 @@
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('is-visible');
+          pendingTargets.delete(entry.target);
           currentObserver.unobserve(entry.target);
         }
       });
@@ -204,11 +233,24 @@
     revealAllImmediately();
   }
 
-  // Interactive tap/keyboard toggle groups (03 Services, 04 Perspectives, 05 Practice cards, 07 People mosaic)
+  // Interactive tap/keyboard toggle groups (03 Services, 04 Perspectives, 07 People mosaic)
   const setupInteractiveGroup = (containerSelector, itemSelector, toggleContainerActiveClass = false) => {
     const container = document.querySelector(containerSelector);
     if (!container) return;
     const items = Array.from(container.querySelectorAll(itemSelector));
+    const syncExpandedState = () => {
+      items.forEach(el => {
+        const expanded = el.classList.contains('is-active');
+        if (el.hasAttribute('aria-expanded')) {
+          el.setAttribute('aria-expanded', String(expanded));
+        }
+        const detail = el.querySelector('.service-detail');
+        if (detail) detail.setAttribute('aria-hidden', String(!expanded));
+        const readLabel = el.querySelector('.service-readmore span');
+        if (readLabel) readLabel.textContent = expanded ? 'Read less' : 'Read more';
+      });
+    };
+
     const toggleItem = item => {
       const wasActive = item.classList.contains('is-active');
       items.forEach(el => el.classList.remove('is-active'));
@@ -218,7 +260,10 @@
       } else if (toggleContainerActiveClass) {
         container.classList.remove('has-active');
       }
+      syncExpandedState();
     };
+
+    syncExpandedState();
 
     items.forEach(item => {
       item.addEventListener('click', () => toggleItem(item));
@@ -233,22 +278,111 @@
 
   setupInteractiveGroup('.service-grid', '.service-card', true);
   setupInteractiveGroup('.article-list', '.article-row');
-  setupInteractiveGroup('.work-grid', '.work-card');
   setupInteractiveGroup('.people-prompts', '.mosaic-card');
 
-  // 04 / Practice Room folder manual spread/tuck toggle
-  const folderShell = document.querySelector('.case-folder-shell');
-  const folderToggle = document.querySelector('.folder-toggle');
-  if (folderShell && folderToggle) {
-    const syncFolderLabel = opened => {
-      folderToggle.setAttribute('aria-expanded', String(opened));
-      const label = folderToggle.querySelector('span');
-      if (label) label.textContent = opened ? 'Tuck sheets' : 'Spread sheets';
-    };
-    folderToggle.addEventListener('click', () => {
-      const opened = folderShell.classList.toggle('is-folder-opened');
+  // 05 / Partner folder: opens smoothly when hovering a card/packet, closes on mouse-leave (tap on touch)
+  if (folderShell) {
+    const workCards = Array.from(folderShell.querySelectorAll('.work-card'));
+    const tabletLayoutQuery = window.matchMedia ? window.matchMedia('(max-width: 900px)') : null;
+    const supportsHover = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const useTapMode = () => !supportsHover() || Boolean(tabletLayoutQuery && tabletLayoutQuery.matches);
+
+    const syncFolderState = () => {
+      const opened =
+        folderShell.classList.contains('is-folder-open') ||
+        folderShell.classList.contains('is-folder-opened');
+      workCards.forEach(card => card.setAttribute('aria-expanded', String(opened)));
       syncFolderLabel(opened);
+    };
+
+    const setHoverOpen = open => {
+      folderShell.classList.toggle('is-folder-open', open);
+      syncFolderState();
+    };
+
+    syncFolderState();
+
+    // Hovering any peeking card or the folder packet opens the 3-card fan smoothly;
+    // moving between cards inside .case-folder-shell stays open with zero flicker and closes on leave.
+    const openTriggers = folderShell.querySelectorAll('.work-card, .case-folder-front, .folder-tab, .case-folder-back');
+    openTriggers.forEach(trigger => {
+      trigger.addEventListener('pointerenter', e => {
+        if (e.pointerType === 'mouse' && supportsHover()) {
+          setHoverOpen(true);
+        }
+      });
     });
+
+    folderShell.addEventListener('pointerleave', e => {
+      if (e.pointerType === 'mouse' && supportsHover()) {
+        folderShell.classList.remove('is-folder-opened');
+        setHoverOpen(false);
+      }
+    });
+
+    folderShell.addEventListener('focusin', e => {
+      if (e.target.closest('.work-card') && e.target.matches(':focus-visible')) {
+        setHoverOpen(true);
+      }
+    });
+
+    folderShell.addEventListener('focusout', e => {
+      if (!folderShell.contains(e.relatedTarget)) {
+        setHoverOpen(false);
+      }
+    });
+
+    workCards.forEach(card => {
+      card.addEventListener('click', e => {
+        if (!useTapMode()) return;
+        e.stopPropagation();
+        setHoverOpen(!folderShell.classList.contains('is-folder-open'));
+      });
+      card.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          setHoverOpen(!folderShell.classList.contains('is-folder-open'));
+        } else if (e.key === 'Escape') {
+          folderShell.classList.remove('is-folder-opened');
+          setHoverOpen(false);
+          card.blur();
+        }
+      });
+    });
+
+    folderShell.addEventListener('click', e => {
+      if (useTapMode() && !e.target.closest('.folder-toggle')) {
+        setHoverOpen(!folderShell.classList.contains('is-folder-open'));
+      }
+    });
+
+    document.addEventListener('click', e => {
+      if (!folderShell.contains(e.target)) {
+        folderShell.classList.remove('is-folder-open');
+        if (useTapMode()) folderShell.classList.remove('is-folder-opened');
+        syncFolderState();
+      }
+    });
+
+    if (folderToggle) {
+      folderToggle.addEventListener('click', e => {
+        e.stopPropagation();
+        const pinned = folderShell.classList.contains('is-folder-opened');
+        if (pinned) {
+          folderShell.classList.remove('is-folder-opened', 'is-folder-open');
+        } else {
+          folderShell.classList.add('is-folder-opened');
+        }
+        syncFolderState();
+      });
+    }
+
+    window.addEventListener('resize', () => {
+      if (!useTapMode()) {
+        folderShell.classList.remove('is-folder-open');
+        syncFolderState();
+      }
+    }, { passive: true });
   }
 
   // Scroll-driven choreography: Hero 3-scene slideshow, Practice Room case-file folder, Process timelines, Spotlight parallax
@@ -262,8 +396,7 @@
     const practiceStage = document.querySelector('.practice-stage');
     const practiceSeqEl = document.querySelector('.section-end-link');
     const processSteps = Array.from(document.querySelectorAll('.process-step'));
-    const convSection = document.querySelector('.conversation');
-    const peopleEl = document.querySelector('.people-prompts');
+    const convSections = Array.from(document.querySelectorAll('.conversation'));
     const closingEl = document.querySelector('.closing');
     const closingPillars = Array.from(document.querySelectorAll('.closing-pillar'));
     const contactSection = document.querySelector('.contact');
@@ -276,6 +409,7 @@
     let scrollTicking = false;
     let lastScrollY = window.scrollY;
     let lastHeroSlideNum = '03';
+    let maxFolderAppear = 0;
 
     const resetDesktopVars = () => {
       root.style.removeProperty('--hero-p');
@@ -285,14 +419,10 @@
         heroVisual.style.setProperty('--slide3-p', '0');
       }
       if (beliefEl) beliefEl.style.removeProperty('--belief-p');
-      if (convSection) convSection.style.removeProperty('--conv-p');
-      if (peopleEl) peopleEl.style.removeProperty('--people-p');
+      convSections.forEach(sec => sec.style.removeProperty('--conv-p'));
       if (contactSection) contactSection.style.removeProperty('--contact-p');
       if (folderShell) {
-        folderShell.style.removeProperty('--folder-rise');
         folderShell.style.removeProperty('--folder-appear');
-        folderShell.style.removeProperty('--folder-tuck');
-        folderShell.style.removeProperty('--folder-exit');
       }
     };
 
@@ -303,32 +433,69 @@
       const scrollingDown = currentY >= lastScrollY;
       lastScrollY = currentY;
 
-      if (currentY > 4) root.classList.add('is-hero-settled');
+      const compact = isCompactViewport();
+      const isTabletOrDesktop = !Boolean(mobileDrawerQuery && mobileDrawerQuery.matches);
+      const closingPillarsWrap = closingEl ? closingEl.querySelector('.closing-pillars') : null;
+      const isMobileTimeline = Boolean(mobileDrawerQuery && mobileDrawerQuery.matches);
 
-      // Ensure fast programmatic or user scrolls never leave any reveal hidden
-      allTargets.forEach(el => {
-        if (el.classList.contains('is-visible')) return;
+      // Phase 1: Batch all layout reads before any DOM writes to prevent forced reflow
+      const toReveal = [];
+      pendingTargets.forEach(el => {
         const rect = el.getBoundingClientRect();
         const inView = rect.top < vh - 12 && rect.bottom > 12;
         const passedDown = scrollingDown && rect.top < vh - 12;
-        if (inView || passedDown) {
-          el.classList.add('is-visible');
-          if (revealObserver) revealObserver.unobserve(el);
-        }
+        if (inView || passedDown) toReveal.push(el);
       });
 
-      const compact = isCompactViewport();
-      const isTabletOrDesktop = !Boolean(mobileDrawerQuery && mobileDrawerQuery.matches);
+      const heroMetrics = (heroStage && heroSection && heroVisual) ? {
+        sr: heroStage.getBoundingClientRect(),
+        stageH: heroStage.offsetHeight,
+        heroH: heroSection.offsetHeight,
+        visualTop: heroVisual.offsetTop,
+        visualH: heroVisual.offsetHeight
+      } : null;
+
+      const beliefRect = (!compact && beliefEl) ? beliefEl.getBoundingClientRect() : null;
+      const convRects = (!compact && convSections.length)
+        ? convSections.map(sec => ({ sec, rect: sec.getBoundingClientRect() }))
+        : [];
+      const contactRect = (!compact && contactSection) ? contactSection.getBoundingClientRect() : null;
+      const folderRect = folderShell ? (practiceStage || folderShell).getBoundingClientRect() : null;
+      const seqRect = practiceSeqEl ? practiceSeqEl.getBoundingClientRect() : null;
+      const closingRect = closingEl ? closingEl.getBoundingClientRect() : null;
+      const pillarsRect = closingPillarsWrap ? closingPillarsWrap.getBoundingClientRect() : null;
+
+      let mobileNodeMetrics = null;
+      if (isMobileTimeline && closingPillarsWrap && closingPillars.length >= 3) {
+        const n0 = closingPillars[0].querySelector('.pillar-node');
+        const n1 = closingPillars[1].querySelector('.pillar-node');
+        const n2 = closingPillars[2].querySelector('.pillar-node');
+        if (n0 && n1 && n2) {
+          mobileNodeMetrics = {
+            y0: n0.getBoundingClientRect().top + n0.offsetHeight / 2,
+            y1: n1.getBoundingClientRect().top + n1.offsetHeight / 2,
+            y2: n2.getBoundingClientRect().top + n2.offsetHeight / 2
+          };
+        }
+      }
+
+      // Phase 2: Perform all DOM mutations together
+      if (currentY > 4) root.classList.add('is-hero-settled');
+
+      toReveal.forEach(el => {
+        el.classList.add('is-visible');
+        pendingTargets.delete(el);
+        if (revealObserver) revealObserver.unobserve(el);
+      });
 
       // 02 / Scroll-controlled 3-scene hero slideshow (03/03 -> 02/03 -> 01/03)
-      if (heroStage && heroSection && heroVisual) {
-        const sr = heroStage.getBoundingClientRect();
+      if (heroMetrics) {
         let slideP = 0;
-        if (isTabletOrDesktop && heroStage.offsetHeight > heroSection.offsetHeight + 48) {
-          const pinTravel = Math.max(1, heroStage.offsetHeight - heroSection.offsetHeight);
-          slideP = clamp01(-sr.top / pinTravel);
+        if (isTabletOrDesktop && heroMetrics.stageH > heroMetrics.heroH + 48) {
+          const pinTravel = Math.max(1, heroMetrics.stageH - heroMetrics.heroH);
+          slideP = clamp01(-heroMetrics.sr.top / pinTravel);
         } else {
-          const mobileSpan = Math.max(260, heroVisual.offsetTop + heroVisual.offsetHeight * 0.65);
+          const mobileSpan = Math.max(260, heroMetrics.visualTop + heroMetrics.visualH * 0.65);
           slideP = clamp01(currentY / mobileSpan);
         }
 
@@ -353,64 +520,33 @@
 
       if (compact) {
         if (beliefEl) beliefEl.style.removeProperty('--belief-p');
-        if (convSection) convSection.style.removeProperty('--conv-p');
-        if (peopleEl) peopleEl.style.removeProperty('--people-p');
+        convSections.forEach(sec => sec.style.removeProperty('--conv-p'));
         if (contactSection) contactSection.style.removeProperty('--contact-p');
       } else {
-        if (beliefEl) {
-          const r = beliefEl.getBoundingClientRect();
-          beliefEl.style.setProperty('--belief-p', clamp01((vh - r.top) / (vh * 0.82)).toFixed(4));
+        if (beliefRect) {
+          beliefEl.style.setProperty('--belief-p', clamp01((vh - beliefRect.top) / (vh * 0.82)).toFixed(4));
         }
-
-        if (convSection) {
-          const r = convSection.getBoundingClientRect();
-          convSection.style.setProperty('--conv-p', clamp01((vh - r.top) / (vh + r.height)).toFixed(4));
-        }
-
-        if (peopleEl) {
-          const r = peopleEl.getBoundingClientRect();
-          peopleEl.style.setProperty('--people-p', clamp01((vh - r.top) / (vh + r.height)).toFixed(4));
-        }
-
-        if (contactSection) {
-          const r = contactSection.getBoundingClientRect();
-          contactSection.style.setProperty('--contact-p', clamp01((vh - r.top) / (vh + r.height)).toFixed(4));
+        convRects.forEach(({ sec, rect }) => {
+          sec.style.setProperty('--conv-p', clamp01((vh - rect.top) / (vh + rect.height)).toFixed(4));
+        });
+        if (contactRect) {
+          contactSection.style.setProperty('--contact-p', clamp01((vh - contactRect.top) / (vh + contactRect.height)).toFixed(4));
         }
       }
 
-      // 05 / 5-Stage Case File Folder scroll progress (pinned on desktop, continuous tuck on compact)
-      if (practiceStage && folderShell) {
-        if (isDesktopFolderPinned()) {
-          const r = practiceStage.getBoundingClientRect();
-          const pinRange = Math.max(1, r.height - vh * 0.68);
-          // Stage 1-2 (0..0.28): cards rise staggered into overlapping portrait fan
-          // Stage 3   (0.24..0.46): folder back & front panel rise cleanly
-          // Stage 4-5 (0.46..0.88): cards slide smoothly down into folder pocket
-          const rawP = clamp01((vh * 0.56 - r.top) / pinRange);
-          const rise = clamp01(rawP / 0.28);
-          const appear = clamp01((rawP - 0.14) / 0.26);
-          const tuck = clamp01((rawP - 0.44) / 0.44);
-          const exit = clamp01((rawP - 0.88) / 0.12);
-          folderShell.style.setProperty('--folder-rise', rise.toFixed(4));
-          folderShell.style.setProperty('--folder-appear', appear.toFixed(4));
-          folderShell.style.setProperty('--folder-tuck', tuck.toFixed(4));
-          folderShell.style.setProperty('--folder-exit', exit.toFixed(4));
-        } else {
-          const sr = folderShell.getBoundingClientRect();
-          const mobileTuck = clamp01((vh * 0.48 - sr.top) / Math.max(1, sr.height * 0.72));
-          folderShell.style.removeProperty('--folder-rise');
-          folderShell.style.removeProperty('--folder-appear');
-          folderShell.style.setProperty('--folder-tuck', mobileTuck.toFixed(4));
-          folderShell.style.removeProperty('--folder-exit');
-        }
+      // 05 / Partner folder subtle pocket entrance opacity on scroll (stays tucked until hovered)
+      if (folderRect) {
+        const span = Math.max(1, vh * 0.54);
+        const rawP = clamp01((vh * 0.90 - folderRect.top) / span);
+        const passed = folderRect.top < vh * 0.48 ? 1 : rawP;
+        maxFolderAppear = Math.max(maxFolderAppear, smoothstep(0, 0.38, passed));
+        folderShell.style.setProperty('--folder-appear', maxFolderAppear.toFixed(4));
       }
 
-      // 06 / Process-style scroll progression (Practice Room sequence + Closing Pillars)
-      if (practiceSeqEl) {
-        const r = practiceSeqEl.getBoundingClientRect();
-        const seqP = compact
-          ? (r.top < vh * 0.92 ? 1 : 0)
-          : clamp01((vh * 0.92 - r.top) / (vh * 0.45));
+      // 06 / Smooth bidirectional sequence timelines (Practice sequence + Think/Create/Communicate)
+      if (seqRect) {
+        const seqSpan = compact ? vh * 0.34 : vh * 0.44;
+        const seqP = clamp01((vh * 0.92 - seqRect.top) / seqSpan);
         practiceSeqEl.style.setProperty('--practice-seq-p', seqP.toFixed(4));
         processSteps.forEach((stepEl, idx) => {
           const threshold = idx / Math.max(1, processSteps.length);
@@ -418,34 +554,21 @@
         });
       }
 
-      if (closingEl) {
-        const closingPillarsWrap = closingEl.querySelector('.closing-pillars');
-        const r = closingEl.getBoundingClientRect();
-        // Keep closing phrase reveal linked to closing section
-        const phraseP = clamp01((vh * 0.9 - r.top) / (vh * 0.65));
+      if (closingRect) {
+        const phraseP = clamp01((vh * 0.9 - closingRect.top) / (vh * 0.65));
         closingEl.style.setProperty('--closing-p', phraseP.toFixed(4));
 
-        if (closingPillarsWrap) {
-          const pr = closingPillarsWrap.getBoundingClientRect();
-          const isMobileTimeline = Boolean(mobileDrawerQuery && mobileDrawerQuery.matches);
-          const startY = isMobileTimeline ? vh * 0.9 : vh * 0.92;
-          const travel = isMobileTimeline ? vh * 0.5 : vh * 0.56;
-          const lineP = clamp01((startY - pr.top) / travel);
+        if (pillarsRect) {
+          const startY = isMobileTimeline ? vh * 0.90 : vh * 0.90;
+          const travel = isMobileTimeline ? vh * 0.46 : vh * 0.44;
+          const lineP = clamp01((startY - pillarsRect.top) / travel);
           closingPillarsWrap.style.setProperty('--closing-p', lineP.toFixed(4));
 
           let midThreshold = 0.5;
-          if (isMobileTimeline && closingPillars.length >= 3) {
-            const n0 = closingPillars[0].querySelector('.pillar-node');
-            const n1 = closingPillars[1].querySelector('.pillar-node');
-            const n2 = closingPillars[2].querySelector('.pillar-node');
-            if (n0 && n1 && n2) {
-              const y0 = n0.getBoundingClientRect().top + n0.offsetHeight / 2;
-              const y1 = n1.getBoundingClientRect().top + n1.offsetHeight / 2;
-              const y2 = n2.getBoundingClientRect().top + n2.offsetHeight / 2;
-              const span = Math.max(1, y2 - y0);
-              closingPillarsWrap.style.setProperty('--mobile-track-h', `${span.toFixed(1)}px`);
-              midThreshold = clamp01((y1 - y0) / span);
-            }
+          if (mobileNodeMetrics) {
+            const span = Math.max(1, mobileNodeMetrics.y2 - mobileNodeMetrics.y0);
+            closingPillarsWrap.style.setProperty('--mobile-track-h', `${span.toFixed(1)}px`);
+            midThreshold = clamp01((mobileNodeMetrics.y1 - mobileNodeMetrics.y0) / span);
           } else {
             closingPillarsWrap.style.removeProperty('--mobile-track-h');
           }
@@ -505,6 +628,23 @@
 
   // 07 / Cursor-following radial torchlight & subtle ambient spotlight + Magnetic CTA
   if (!isReducedMotion() && isFinePointer()) {
+    const pointerAbort = typeof AbortController === 'function' ? new AbortController() : null;
+    const ptrOpts = pointerAbort ? { signal: pointerAbort.signal } : undefined;
+    const activeRafIds = new Set();
+
+    const cleanupPointerEffects = () => {
+      activeRafIds.forEach(id => cancelAnimationFrame(id));
+      activeRafIds.clear();
+      if (pointerAbort) pointerAbort.abort();
+    };
+
+    window.addEventListener('pagehide', cleanupPointerEffects, ptrOpts);
+    if (motionQuery && typeof motionQuery.addEventListener === 'function') {
+      motionQuery.addEventListener('change', event => {
+        if (event.matches) cleanupPointerEffects();
+      }, ptrOpts);
+    }
+
     document.querySelectorAll('.torchlight-surface').forEach(surface => {
       const rect0 = surface.getBoundingClientRect();
       let targetX = rect0.width ? rect0.width * 0.66 : 600;
@@ -516,6 +656,7 @@
       let rafId = 0;
 
       const animateTorch = () => {
+        activeRafIds.delete(rafId);
         currentX += (targetX - currentX) * 0.20;
         currentY += (targetY - currentY) * 0.20;
         currentAlpha += (targetAlpha - currentAlpha) * 0.24;
@@ -528,6 +669,7 @@
           Math.abs(targetAlpha - currentAlpha) > 0.008;
         if (moving) {
           rafId = requestAnimationFrame(animateTorch);
+          activeRafIds.add(rafId);
         } else {
           currentAlpha = targetAlpha;
           surface.style.setProperty('--torch-alpha', currentAlpha.toFixed(3));
@@ -548,8 +690,11 @@
         targetX = px;
         targetY = py;
         targetAlpha = 1;
-        if (!rafId) rafId = requestAnimationFrame(animateTorch);
-      });
+        if (!rafId) {
+          rafId = requestAnimationFrame(animateTorch);
+          activeRafIds.add(rafId);
+        }
+      }, ptrOpts);
 
       surface.addEventListener('pointermove', e => {
         if (e.pointerType && e.pointerType !== 'mouse') return;
@@ -558,13 +703,19 @@
         targetX = Math.max(0, Math.min(r.width, e.clientX - r.left));
         targetY = Math.max(0, Math.min(r.height, e.clientY - r.top));
         targetAlpha = 1;
-        if (!rafId) rafId = requestAnimationFrame(animateTorch);
-      });
+        if (!rafId) {
+          rafId = requestAnimationFrame(animateTorch);
+          activeRafIds.add(rafId);
+        }
+      }, ptrOpts);
 
       surface.addEventListener('pointerleave', () => {
         targetAlpha = 0;
-        if (!rafId) rafId = requestAnimationFrame(animateTorch);
-      });
+        if (!rafId) {
+          rafId = requestAnimationFrame(animateTorch);
+          activeRafIds.add(rafId);
+        }
+      }, ptrOpts);
     });
 
     document.querySelectorAll('.spotlight-surface:not(.torchlight-surface)').forEach(surface => {
@@ -575,12 +726,14 @@
       let rafId = 0;
 
       const animateSpotlight = () => {
+        activeRafIds.delete(rafId);
         currentX += (targetX - currentX) * 0.16;
         currentY += (targetY - currentY) * 0.16;
         surface.style.setProperty('--mx', `${currentX.toFixed(2)}%`);
         surface.style.setProperty('--my', `${currentY.toFixed(2)}%`);
         if (Math.abs(targetX - currentX) > 0.08 || Math.abs(targetY - currentY) > 0.08) {
           rafId = requestAnimationFrame(animateSpotlight);
+          activeRafIds.add(rafId);
         } else {
           rafId = 0;
         }
@@ -593,12 +746,15 @@
         targetX = ((e.clientX - r.left) / r.width) * 100;
         targetY = ((e.clientY - r.top) / r.height) * 100;
         surface.style.setProperty('--spotlight-alpha', '1');
-        if (!rafId) rafId = requestAnimationFrame(animateSpotlight);
-      });
+        if (!rafId) {
+          rafId = requestAnimationFrame(animateSpotlight);
+          activeRafIds.add(rafId);
+        }
+      }, ptrOpts);
 
       surface.addEventListener('pointerleave', () => {
         surface.style.setProperty('--spotlight-alpha', '0');
-      });
+      }, ptrOpts);
     });
 
     const magBtn = document.querySelector('.magnetic-cta');
@@ -610,11 +766,11 @@
         const dy = ((e.clientY - (r.top + r.height / 2)) / (r.height / 2)) * 5;
         magBtn.style.setProperty('--mag-x', `${Math.max(-6, Math.min(6, dx)).toFixed(2)}px`);
         magBtn.style.setProperty('--mag-y', `${Math.max(-5, Math.min(5, dy)).toFixed(2)}px`);
-      });
+      }, ptrOpts);
       magBtn.addEventListener('pointerleave', () => {
         magBtn.style.setProperty('--mag-x', '0px');
         magBtn.style.setProperty('--mag-y', '0px');
-      });
+      }, ptrOpts);
     }
   }
 
@@ -654,7 +810,20 @@
       if (document.fonts && document.fonts.ready) {
         document.fonts.ready.then(syncTicker);
       }
-      window.addEventListener('resize', syncTicker, { passive: true });
+      let tickerResizeRaf = 0;
+      const scheduleTickerSync = () => {
+        if (!tickerResizeRaf) {
+          tickerResizeRaf = requestAnimationFrame(() => {
+            tickerResizeRaf = 0;
+            syncTicker();
+          });
+        }
+      };
+      window.addEventListener('resize', scheduleTickerSync, { passive: true });
+      window.addEventListener('pagehide', () => {
+        if (tickerResizeRaf) cancelAnimationFrame(tickerResizeRaf);
+        window.removeEventListener('resize', scheduleTickerSync);
+      });
     }
   }
 })();
